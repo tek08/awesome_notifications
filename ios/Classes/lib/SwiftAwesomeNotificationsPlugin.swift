@@ -153,7 +153,7 @@ public class SwiftAwesomeNotificationsPlugin: NSObject, FlutterPlugin, UNUserNot
     
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         
-        UNUserNotificationCenter.current().delegate = self
+        // UNUserNotificationCenter.current().delegate = self
         
         //enableFirebase(application)
         //enableScheduler(application)
@@ -693,7 +693,13 @@ public class SwiftAwesomeNotificationsPlugin: NSObject, FlutterPlugin, UNUserNot
                 intentIdentifiers: [],
                 options: .customDismissAction
             )
-            UNUserNotificationCenter.current().setNotificationCategories([categoryObject])
+            UNUserNotificationCenter.current().getNotificationCategories(completionHandler: { results in
+                var results = results
+                results.formUnion([categoryObject])
+                
+                UNUserNotificationCenter.current().setNotificationCategories(results)
+            })
+            
         }
         
         SwiftAwesomeNotificationsPlugin.appLifeCycle = NotificationLifeCycle.AppKilled
