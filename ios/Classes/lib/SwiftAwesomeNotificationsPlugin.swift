@@ -164,9 +164,9 @@ public class SwiftAwesomeNotificationsPlugin: NSObject, FlutterPlugin, UNUserNot
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         
         // Set ourselves as the UNUserNotificationCenter delegate, but also preserve any existing delegate...
-        let notificationCenter = UNUserNotificationCenter.current()
-        _originalNotificationCenterDelegate = notificationCenter.delegate
-        notificationCenter.delegate = self
+//         let notificationCenter = UNUserNotificationCenter.current()
+//         _originalNotificationCenterDelegate = notificationCenter.delegate
+//         notificationCenter.delegate = self
         
         //enableFirebase(application)
         //enableScheduler(application)
