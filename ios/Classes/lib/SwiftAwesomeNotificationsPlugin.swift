@@ -125,13 +125,35 @@ public class SwiftAwesomeNotificationsPlugin: NSObject, FlutterPlugin, UNUserNot
     }
     */
 
+    func remoteLog(txt: String?) -> Void {
+        var url: URL = URL(string: "http://10.0.0.8:4000/push_notification/iosremotelog/?NIL")!
+        if let unwrappedTxt = txt {
+            let moo: String = ("AWESOME_NOTIFICATIONS: " + unwrappedTxt).addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            let urlString: String = ("http://10.0.0.8:4000/push_notification/iosremotelog/?txt=" + moo)
+            url = URL(string: urlString)!
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard let data = data else { return }
+            print(String(data: data, encoding: .utf8)!)
+        }
+
+        task.resume()
+    }
+    
     @available(iOS 10.0, *)
     public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        
+
+        self.remoteLog(txt:"AwesomeNotifications: bork bork bork");
+
         var userText:String?
         if let textResponse =  response as? UNTextInputNotificationResponse {
             userText =  textResponse.userText
         }
+
+        self.remoteLog(txt:"AwesomeNotifications: bark bark");
 
         if let jsonData:String = response.notification.request.content.userInfo[Definitions.NOTIFICATION_JSON] as? String {
             receiveAction(
@@ -143,6 +165,8 @@ public class SwiftAwesomeNotificationsPlugin: NSObject, FlutterPlugin, UNUserNot
             print("Received an invalid notification content")
         }
 
+        self.remoteLog(txt:"AwesomeNotifications: original delegate is: " + (_originalNotificationCenterDelegate?.description ?? "none"));
+
         if _originalNotificationCenterDelegate?.userNotificationCenter?(center, didReceive: response, withCompletionHandler: completionHandler) == nil {
             completionHandler()
         }
@@ -150,11 +174,14 @@ public class SwiftAwesomeNotificationsPlugin: NSObject, FlutterPlugin, UNUserNot
 
     @available(iOS 10.0, *)
     public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        self.remoteLog(txt: "willPresent")
         if !receiveNotification(content: notification.request.content, withCompletionHandler: completionHandler) {
             // completionHandler was *not* called, so maybe this notification is for another plugin:
+            self.remoteLog(txt: "completionHandler not called")
 
             if _originalNotificationCenterDelegate?.userNotificationCenter?(center, willPresent: notification, withCompletionHandler: completionHandler) == nil {
                 // TODO(tek08): Absorb notifications like this?  Or present them by default?
+                self.remoteLog(txt: "no handling from \(_originalNotificationCenterDelegate)")
                 print("Was going to present a notification, but no plugin wanted to handle it.")
                 completionHandler([])
             }
@@ -164,9 +191,9 @@ public class SwiftAwesomeNotificationsPlugin: NSObject, FlutterPlugin, UNUserNot
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         
         // Set ourselves as the UNUserNotificationCenter delegate, but also preserve any existing delegate...
-        let notificationCenter = UNUserNotificationCenter.current()
-        _originalNotificationCenterDelegate = notificationCenter.delegate
-        notificationCenter.delegate = self
+//         let notificationCenter = UNUserNotificationCenter.current()
+//         _originalNotificationCenterDelegate = notificationCenter.delegate
+//         notificationCenter.delegate = self
         
         //enableFirebase(application)
         //enableScheduler(application)
